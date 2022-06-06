@@ -1,0 +1,19 @@
+{
+  "bot": {
+    "applicationId": "",
+    "guildId": "",
+    "token": ""
+  },
+  "discord": {
+    "devRole": "",
+    "devChannel": "",
+    "logChannel": "",
+    "suppressChannel": ""
+  },
+  "mysql": {
+    "host": "",
+    "user": "",
+    "password": "",
+    "database": ""
+  }
+}
