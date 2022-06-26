@@ -3,11 +3,10 @@ const { REST } = require("@discordjs/rest");
 const { Sequelize } = require("sequelize");
 const { Routes } = require("discord-api-types/v9");
 const { interactionEmbed, toConsole } = require("./functions.js");
-const AsciiTable = require("ascii-table");
 const config = require("./config.json");
 const rest = new REST({ version: 9 }).setToken(config.bot.token);
-const fs = require("fs");
-const wait = require("util").promisify(setTimeout);
+const fs = require("node:fs");
+const wait = require("node:util").promisify(setTimeout);
 let ready = false;
 
 //#region Setup
@@ -50,8 +49,6 @@ client.sequelize = sequelize;
 client.models = sequelize.models;
 
 (async () => {
-  const table = new AsciiTable("Commands");
-  table.addRow("testing-file.js", "Loaded");
   if(!fs.existsSync("./commands")) return console.info("[FILE-LOAD] No 'commands' folder found, skipping command loading");
   const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
   console.info(`[FILE-LOAD] Loading files, expecting ${commands.length} files`);
@@ -65,12 +62,10 @@ client.models = sequelize.models;
         console.info(`[FILE-LOAD] Loaded: ${file}`);
         slashCommands.push(command.data.toJSON());
         client.commands.set(command.name, command);
-        table.addRow(command.name, "Loaded");
       }
     } catch(e) {
       console.warn(`[FILE-LOAD] Unloaded: ${file}`);
       console.warn(`[FILE-LOAD] ${e}`);
-      table.addRow(file, "Unloaded");
     }
   }
 
@@ -96,11 +91,9 @@ client.models = sequelize.models;
     
     const then = Date.now();
     console.info(`[APP-CMD] Successfully reloaded application (/) commands after ${then - now}ms.`);
-    console.info(table.toString());
   } catch(error) {
     console.error("[APP-CMD] An error has occurred while attempting to refresh application commands.");
     console.error(`[APP-CMD] ${error}`);
-    console.info(table.toString());
   }
   console.info("[FILE-LOAD] All files loaded successfully");
   ready = true;
@@ -111,7 +104,7 @@ client.models = sequelize.models;
 client.on("ready", async () => {
   console.info("[READY] Client is ready");
   console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
-  toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T>`, "client.on(ready)", client);
+  toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T>. Client ${ready ? "can" : "cannot"} receive commands!`, "client.on(ready)", client);
   // Set the status to new Date();
   client.guilds.cache.each(g => g.members.fetch());
   client.user.setActivity(`${client.users.cache.size} users across ${client.guilds.cache.size} servers`, { type: "LISTENING" });
@@ -140,7 +133,6 @@ client.on("interactionCreate", async (interaction) => {
   if(interaction.isCommand()) {
     let command = client.commands.get(interaction.commandName);
     await interaction.deferReply({ ephemeral: false });
-    // await interaction.deferReply({ ephemeral: command.ephemeral });
     if(command) {
       command.run(client, interaction, interaction.options)
         .catch((e) => {
@@ -178,7 +170,7 @@ process.on("unhandledRejection", async (promise) => {
   }
   const suppressChannel = await client.channels.fetch(config.discord.suppressChannel).catch(() => { return undefined; });
   if(!suppressChannel) return console.error(`An [unhandledRejection] has occurred.\n\n> ${promise}`);
-  if(String(promise).includes("Interaction has already been acknowledged.") || String(promise).includes("Unknown interaction") || String(promise).includes("Unknown Message") || String(promise).includes("rCannot read properties of undefined (reading 'ephemeral')")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${promise}`);
+  if(String(promise).includes("Interaction has already been acknowledged.") || String(promise).includes("Unknown interaction") || String(promise).includes("Unknown Message")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${promise}`);
   toConsole(`An [unhandledRejection] has occurred.\n\n> ${promise}`, "process.on('unhandledRejection')", client);
 });
 process.on("warning", async (warning) => {
