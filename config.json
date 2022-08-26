@@ -5,8 +5,6 @@
     "token": ""
   },
   "discord": {
-    "devRole": "",
-    "devChannel": "",
     "logChannel": "",
     "suppressChannel": ""
   },

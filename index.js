@@ -1,10 +1,10 @@
 const { Client, Collection } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 const { Sequelize } = require("sequelize");
-const { Routes } = require("discord-api-types/v9");
+const { Routes } = require("discord-api-types/v10");
 const { interactionEmbed, toConsole } = require("./functions.js");
 const config = require("./config.json");
-const rest = new REST({ version: 9 }).setToken(config.bot.token);
+const rest = new REST({ version: 10 }).setToken(config.bot.token);
 const fs = require("node:fs");
 const wait = require("node:util").promisify(setTimeout);
 let ready = false;
@@ -35,13 +35,7 @@ if(!fs.existsSync("./models")) {
 
 // Discord bot
 const client = new Client({
-  intents: ["GUILDS","GUILD_BANS","GUILD_MEMBERS","GUILD_MESSAGES"],
-  sweepers: {
-    "messages": {
-      lifetime: 10,
-      interval: 15
-    }
-  }
+  intents: ["GUILDS","GUILD_BANS","GUILD_MEMBERS"]
 });
 const slashCommands = [];
 client.commands = new Collection();
@@ -104,7 +98,7 @@ client.models = sequelize.models;
 client.on("ready", async () => {
   console.info("[READY] Client is ready");
   console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
-  toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T>. Client ${ready ? "can" : "cannot"} receive commands!`, "client.on(ready)", client);
+  toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T>. Client ${ready ? "can" : "**cannot**"} receive commands!`, "client.on(ready)", client);
   // Set the status to new Date();
   client.guilds.cache.each(g => g.members.fetch());
   client.user.setActivity(`${client.users.cache.size} users across ${client.guilds.cache.size} servers`, { type: "LISTENING" });
@@ -136,7 +130,7 @@ client.on("interactionCreate", async (interaction) => {
     if(command) {
       command.run(client, interaction, interaction.options)
         .catch((e) => {
-          interaction.editReply("Something went wrong while executing the command. Please report this to <@409740404636909578> (Tavi#0001)");
+          interaction.editReply("Something went wrong while executing the command. Please report this to the developer");
           toConsole(e.stack, `command.run(${command.name})`, client);
         });
     }

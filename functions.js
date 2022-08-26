@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, MessageEmbed, Interaction, MessageActionRow, MessageButton, MessageSelectMenu, SelectMenuInteraction } = require("discord.js");
+const { Client, EmbedBuilder, Interaction, ActionRow, ButtonComponent, SelectMenuComponent, SelectMenuInteraction } = require("discord.js");
 // eslint-disable-next-line no-unused-vars
-const { SelectMenuOptionData } = require("./classes/SelectMenuOptionData");
+const { APIMessageSelectMenuInteractionData } = require("discord-api-types/v10");
 const config = require("./config.json");
 
 const errors = {
@@ -29,12 +29,12 @@ module.exports = {
    */
   toConsole: async (message, source, client) => {
     if(!message || !source || !client) return console.error(`One or more of the required parameters are missing.\n\n> message: ${message}\n> source: ${source}\n> client: ${client}`);
-    const channel = await client.channels.cache.get(config.discord.devChannel);
-    if(!channel) return console.warn("[WARN] toConsole called but bot cannot find config.discord.devChannel", message, source);
+    const channel = await client.channels.cache.get(config.discord.logChannel);
+    if(!channel) return console.warn("[WARN] toConsole called but bot cannot find config.discord.logChannel", message, source);
 
     channel.send(`Incoming message from ${source} at <t:${Math.floor(Date.now()/1000)}:F>`);
     channel.send({ embeds: [
-      new MessageEmbed({
+      new EmbedBuilder({
         title: "Message to Console",
         color: "RED",
         description: `${message}`,
@@ -48,7 +48,7 @@ module.exports = {
     return null;
   },
   /**
-   * @description Replies with a MessageEmbed to the Interaction
+   * @description Replies with a EmbedBuilder to the Interaction
    * @param {Number} type 1- Sucessful, 2- Warning, 3- Error, 4- Information
    * @param {String} content The information to state
    * @param {String} expected The expected argument (If applicable)
@@ -62,7 +62,7 @@ module.exports = {
   interactionEmbed: async function(type, content, expected, interaction, client, remove) {
     if(!type || typeof content != "string" || expected === undefined || !interaction || !client || !remove || remove.length != 2) throw new SyntaxError(`One or more of the required parameters are missing in [interactionEmbed]\n\n> ${type}\n> ${content}\n> ${expected}\n> ${interaction}\n> ${client}`);
     if(!interaction.deferred) await interaction.deferReply();
-    const embed = new MessageEmbed();
+    const embed = new EmbedBuilder();
 
     switch(type) {
     case 1:
@@ -111,15 +111,15 @@ module.exports = {
     return null;
   },
   /**
-     * Sends buttons to a user and awaits the response
-     * @param {Interaction} interaction Interaction object
-     * @param {Number} time Seconds for which the buttons are valid
-     * @param {Array<MessageButton>} buttons The buttons to place on the message
-     * @param {String|null} content The content to display, can be blank
-     * @param {Boolean} remove Delete the message after the time expires
-     * @example awaitButtons(interaction, 15, [button1, button2], `Select a button`, true);
-     * @returns {MessageButton|null} The button the user clicked or null if no button was clicked
-     */
+    * Sends buttons to a user and awaits the response
+    * @param {Interaction} interaction Interaction object
+    * @param {Number} time Seconds for which the buttons are valid
+    * @param {Array<ButtonComponent>} buttons The buttons to place on the message
+    * @param {String|null} content The content to display, can be blank
+    * @param {Boolean} remove Delete the message after the time expires
+    * @example awaitButtons(interaction, 15, [button1, button2], `Select a button`, true);
+    * @returns {ButtonComponent|null} The button the user clicked or null if no button was clicked
+    */
   awaitButtons: async function (interaction, time, buttons, content, remove) {
     if(!interaction || !time || !buttons || remove === null) return new SyntaxError(`One of the following values is not fulfilled:\n> interaction: ${interaction}\n> time: ${time}\n> buttons: ${buttons}\n> remove: ${remove}`);
     content = content ?? "Please select an option";
@@ -130,8 +130,8 @@ module.exports = {
     };
     // Convert the time to milliseconds
     time *= 1000;
-    // Create a MessageActionRow and add the buttons
-    const row = new MessageActionRow();
+    // Create a ActionRow and add the buttons
+    const row = new ActionRow();
     row.addComponents(buttons);
     // Send a follow-up message with the buttons and await a response
     const message = await interaction.followUp({ content: content, components: [row] });
@@ -150,11 +150,11 @@ module.exports = {
     return res;
   },
   /**
-   * Send a MessageSelectMenu to a user and awaits the response
+   * Send a SelectMenuComponent to a user and awaits the response
    * @param {Interaction} interaction Interaction object
    * @param {Number} time Seconds for which the menu is valid
    * @param {Number[]} values [min, max] The amount of values that can be selected
-   * @param {SelectMenuOptionData|SelectMenuOptionData[]} options The options for the menu
+   * @param {APIMessageSelectMenuInteractionData|APIMessageSelectMenuInteractionData[]} options The options for the menu
    * @param {String|null} content The content to display, can be blank
    * @param {Boolean} remove Delete the message after the time expires
    * @example awaitMenu(interaction, 15, [menu], `Select an option`, true);
@@ -172,8 +172,8 @@ module.exports = {
     time *= 1000;
 
     // Step 2: Creation
-    const row = new MessageActionRow();
-    const menu = new MessageSelectMenu({
+    const row = new ActionRow();
+    const menu = new SelectMenuComponent({
       minValues: values[0],
       maxValues: values[1],
       customId: "await-menu"
