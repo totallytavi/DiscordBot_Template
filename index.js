@@ -1,4 +1,4 @@
-const { Client, Collection } = require("discord.js");
+const { Client, Collection, IntentsBitField } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 const { Sequelize } = require("sequelize");
 const { Routes } = require("discord-api-types/v10");
@@ -35,7 +35,7 @@ if(!fs.existsSync("./models")) {
 
 // Discord bot
 const client = new Client({
-  intents: ["GUILDS","GUILD_BANS","GUILD_MEMBERS"]
+  intents: [IntentsBitField.Flags.Guild]
 });
 const slashCommands = [];
 client.commands = new Collection();

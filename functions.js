@@ -1,7 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, EmbedBuilder, Interaction, ActionRow, ButtonComponent, SelectMenuComponent, SelectMenuInteraction } = require("discord.js");
-// eslint-disable-next-line no-unused-vars
-const { APIMessageSelectMenuInteractionData } = require("discord-api-types/v10");
+const { Client, EmbedBuilder, Interaction, ActionRow, ButtonComponent, SelectMenuComponent, SelectMenuInteraction, SelectMenuOptionBuilder, ComponentType } = require("discord.js");
 const config = require("./config.json");
 
 const errors = {
@@ -36,7 +34,7 @@ module.exports = {
     channel.send({ embeds: [
       new EmbedBuilder({
         title: "Message to Console",
-        color: "RED",
+        color: 0xFF0000,
         description: `${message}`,
         footer: {
           text: `Source: ${source} @ ${new Date().toLocaleTimeString()} ${new Date().toString().match(/GMT([+-]\d{2})(\d{2})/)[0]}`
@@ -69,9 +67,8 @@ module.exports = {
       embed
         .setTitle("Success")
         .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL({ dynamic: true, size: 4096 }) })
-        .setColor("BLURPLE")
+        .setColor(0x5865F2)
         .setDescription(!errors[content] ? expected : `${errors[content]}\n> ${expected}`)
-        .setFooter({ text: "The operation was completed successfully with no errors" })
         .setTimestamp();
   
       break;
@@ -79,9 +76,8 @@ module.exports = {
       embed
         .setTitle("Warning")
         .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL({ dynamic: true, size: 4096 }) })
-        .setColor("ORANGE")
+        .setColor(0xFEE75C)
         .setDescription(!errors[content] ? expected : `${errors[content]}\n> ${expected}`)
-        .setFooter({ text: "The operation was completed successfully with a minor error" })
         .setTimestamp();
   
       break;
@@ -89,9 +85,8 @@ module.exports = {
       embed
         .setTitle("Error")
         .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL({ dynamic: true, size: 4096 }) })
-        .setColor("RED")
+        .setColor(0xFF0000)
         .setDescription(!errors[content] ? `I don't understand the error "${content}" but was expecting ${expected}. Please report this to the support server!` : `${errors[content]}\n> ${expected}`)
-        .setFooter({ text: "The operation failed to complete due to an error" })
         .setTimestamp();
   
       break;
@@ -99,9 +94,8 @@ module.exports = {
       embed
         .setTitle("Information")
         .setAuthor({ name: interaction.user.username, iconURL: interaction.user.avatarURL({ dynamic: true, size: 4096 }) })
-        .setColor("BLURPLE")
+        .setColor(0x5865F2)
         .setDescription(!errors[content] ? expected : `${errors[content]}\n> ${expected}`)
-        .setFooter({ text: "The operation is pending completion" })
         .setTimestamp();
   
       break;
@@ -136,7 +130,7 @@ module.exports = {
     // Send a follow-up message with the buttons and await a response
     const message = await interaction.followUp({ content: content, components: [row] });
     const res = await message
-      .awaitMessageComponent({ filter, componentType: "BUTTON", time: time, errors: ["time"] })
+      .awaitMessageComponent({ filter, componentType: ComponentType.Button, time: time, errors: ["time"] })
       .catch(() => { return null; });
     // Disable the buttons on row
     for(const button of row.components) {
@@ -144,7 +138,7 @@ module.exports = {
     }
     // Step 5: Cleanup
     setTimeout(() => {
-      if(message != undefined && !message.deleted && remove && res != null) message.delete();
+      if(message != undefined && remove && res != null) message.delete();
     }, 1500);
     await message.edit({ content: content, components: [] });
     return res;
@@ -154,7 +148,7 @@ module.exports = {
    * @param {Interaction} interaction Interaction object
    * @param {Number} time Seconds for which the menu is valid
    * @param {Number[]} values [min, max] The amount of values that can be selected
-   * @param {APIMessageSelectMenuInteractionData|APIMessageSelectMenuInteractionData[]} options The options for the menu
+   * @param {SelectMenuOptionBuilder|SelectMenuOptionBuilder[]} options The options for the menu
    * @param {String|null} content The content to display, can be blank
    * @param {Boolean} remove Delete the message after the time expires
    * @example awaitMenu(interaction, 15, [menu], `Select an option`, true);
@@ -184,7 +178,7 @@ module.exports = {
     // Step 3: Execution
     const message = await interaction.followUp({ content: content, components: [row] });
     const res = await message
-      .awaitMessageComponent({ filter, componentType: "SELECT_MENU", time: time, errors: ["time"] })
+      .awaitMessageComponent({ filter, componentType: ComponentType.SelectMenu, time: time, errors: ["time"] })
       .catch(() => { return null; });
 
     // Step 4: Processing
@@ -194,7 +188,7 @@ module.exports = {
 
     // Step 5: Cleanup
     setTimeout(() => {
-      if(message != undefined && !message.deleted && remove && res != null) message.delete();
+      if(message != undefined && remove && res != null) message.delete();
     }, 1500);
     await message.edit({ content: content, components: [] });
     return res;
