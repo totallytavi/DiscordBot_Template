@@ -35,7 +35,7 @@ if(!fs.existsSync("./models")) {
 
 // Discord bot
 const client = new Client({
-  intents: [IntentsBitField.Flags.Guild]
+  intents: [IntentsBitField.Flags.Guilds]
 });
 const slashCommands = [];
 client.commands = new Collection();
