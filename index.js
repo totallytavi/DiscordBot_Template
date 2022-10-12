@@ -1,10 +1,8 @@
 const { Client, Collection, IntentsBitField } = require("discord.js");
-const { REST } = require("@discordjs/rest");
 const { Sequelize } = require("sequelize");
-const { Routes } = require("discord-api-types/v10");
+const { InteractionType } = require("discord-api-types/v10");
 const { interactionEmbed, toConsole } = require("./functions.js");
 const config = require("./config.json");
-const rest = new REST({ version: 10 }).setToken(config.bot.token);
 const fs = require("node:fs");
 const wait = require("node:util").promisify(setTimeout);
 let ready = false;
@@ -15,21 +13,14 @@ const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config
   dialect: "mysql",
   logging: process.env.environment === "development" ? console.log : false,
 });
-if(!fs.existsSync("./models")) {
-  console.warn("[DB] No models detected");
-} else {
-  console.info("[DB] Models detected");
-  const models = fs.readdirSync("models").filter(file => file.endsWith(".js"));
-  console.info(`[DB] Expecting ${models.length} models`);
-  for(const model of models) {
-    try {
-      const file = require(`./models/${model}`);
-      file.import(sequelize);
-      console.info(`[DB] Loaded ${model}`);
-    } catch(e) {
-      console.error(`[DB] Unloaded ${model}`);
-      console.error(`[DB] ${e}`);
-    }
+if(!fs.existsSync("./models")) fs.mkdirSync("./models");
+const models = fs.readdirSync("models").filter(file => file.endsWith(".js"));
+for(const model of models) {
+  try {
+    const file = require(`./models/${model}`);
+    file.import(sequelize);
+  } catch(e) {
+    console.error(`[DB] Unloaded ${model}\n`, e);
   }
 }
 
@@ -41,76 +32,33 @@ const slashCommands = [];
 client.commands = new Collection();
 client.sequelize = sequelize;
 client.models = sequelize.models;
-
-(async () => {
-  if(!fs.existsSync("./commands")) return console.info("[FILE-LOAD] No 'commands' folder found, skipping command loading");
-  const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
-  console.info(`[FILE-LOAD] Loading files, expecting ${commands.length} files`);
-
-  for(let file of commands) {
-    try {
-      console.info(`[FILE-LOAD] Loading file ${file}`);
-      let command = require(`./commands/${file}`);
-
-      if(command.name) {
-        console.info(`[FILE-LOAD] Loaded: ${file}`);
-        slashCommands.push(command.data.toJSON());
-        client.commands.set(command.name, command);
-      }
-    } catch(e) {
-      console.warn(`[FILE-LOAD] Unloaded: ${file}`);
-      console.warn(`[FILE-LOAD] ${e}`);
-    }
-  }
-
-  console.info("[FILE-LOAD] All files loaded into ASCII and ready to be sent");
-  await wait(500); // Artificial wait to prevent instant sending
-  const now = Date.now();
-
-  try {
-    console.info("[APP-CMD] Started refreshing application (/) commands.");
-
-    // Refresh based on environment
-    if(process.env.environment === "development") {
-      await rest.put(
-        Routes.applicationGuildCommands(config.bot.applicationId, config.bot.guildId),
-        { body: slashCommands }
-      );
-    } else {
-      await rest.put(
-        Routes.applicationCommands(config.bot.applicationId),
-        { body: slashCommands }
-      );
-    }
-    
-    const then = Date.now();
-    console.info(`[APP-CMD] Successfully reloaded application (/) commands after ${then - now}ms.`);
-  } catch(error) {
-    console.error("[APP-CMD] An error has occurred while attempting to refresh application commands.");
-    console.error(`[APP-CMD] ${error}`);
-  }
-  console.info("[FILE-LOAD] All files loaded successfully");
-  ready = true;
-})();
 //#endregion
 
 //#region Events
 client.on("ready", async () => {
-  console.info("[READY] Client is ready");
-  console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
   toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T>. Client ${ready ? "can" : "**cannot**"} receive commands!`, "client.on(ready)", client);
-  // Set the status to new Date();
   client.guilds.cache.each(g => g.members.fetch());
   client.user.setActivity(`${client.users.cache.size} users across ${client.guilds.cache.size} servers`, { type: "LISTENING" });
 
+  if(!fs.existsSync("./commands")) fs.mkdirSync("./commands");
+  const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+  for(const command of commands) {
+    try {
+      const file = require(`./commands/${command}`);
+      slashCommands.push(file.data.toJSON());
+      client.commands.set(file.data.name, file);
+    } catch(e) {
+      console.error(`[CMD] Unloaded ${command}\n`, e);
+    }
+  }
+  await client.application.commands.set(slashCommands)
+    .catch(e => console.error("[APP-CMD] Failed to set slash commands\n", e));
+
   try {
     await sequelize.authenticate();
-    console.info("[DB] Passed validation");
     await sequelize.sync({ alter: process.env.environment === "development" });
-    console.info("[DB] Synchronized the database");
   } catch(e) {
-    console.warn("[DB] Failed validation");
-    console.error(e);
+    console.error("[DB] Failed validation\n", e);
     process.exit(16);
   }
 
@@ -121,26 +69,50 @@ client.on("ready", async () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if(!interaction.inGuild()) return interactionEmbed(4, "[WARN-NODM]", "", interaction, client, [true, 10]);
   if(!ready) return interactionEmbed(4, "", "The bot is starting up, please wait", interaction, client, [true, 10]);
-  
-  if(interaction.isCommand()) {
+  if(!interaction.inGuild()) return interactionEmbed(2, "[WARN-NODM]", "", interaction, client, [true, 10]);
+  // Remove this line if you want to allow DM commands
+
+  switch(interaction.type) {
+  case InteractionType.ApplicationCommand: {
     let command = client.commands.get(interaction.commandName);
-    await interaction.deferReply({ ephemeral: false });
     if(command) {
-      command.run(client, interaction, interaction.options)
+      const ack = command.run(client, interaction, interaction.options)
         .catch((e) => {
-          interaction.editReply("Something went wrong while executing the command. Please report this to the developer");
-          toConsole(e.stack, `command.run(${command.name})`, client);
+          interaction.editReply("Something went wrong while executing the command. Please report this to <@409740404636909578> (Tavi#0001)");
+          return toConsole(e.stack, new Error().stack, client);
+        });
+      
+      await wait(1e4);
+      if(ack != null) return; // Already executed
+      interaction.fetchReply()
+        .then(m => {
+          if(m.content === "" && m.embeds.length === 0) interactionEmbed(3, "[ERR-UNK]", "The command timed out and failed to reply in 10 seconds", interaction, client, [true, 15]);
         });
     }
-    await wait(1e4);
-    interaction.fetchReply()
-      .then(m => {
-        if(m.content === "" && m.embeds.length === 0) interactionEmbed(3, "[ERR-UNK]", "The command timed out and failed to reply in 10 seconds", interaction, client, [true, 15]);
-      });
-  } else {
-    interaction.deferReply();
+    break;
+  }
+  case InteractionType.ModalSubmit: {
+    let modal = client.modals.get(interaction.customId);
+    if(modal) {
+      const ack = modal.run(client, interaction, interaction.fields)
+        .catch((e) => {
+          interaction.editReply("Something went wrong while executing the modal. Please report this to <@409740404636909578> (Tavi#0001)");
+          return toConsole(e.stack, new Error().stack, client);
+        });
+
+      await wait(1e4);
+      if(ack != null) return; // Already executed
+      interaction.fetchReply()
+        .then(m => {
+          if(m.content === "" && m.embeds.length === 0) interactionEmbed(3, "[ERR-UNK]", "The modal timed out and failed to reply in 10 seconds", interaction, client, [true, 15]);
+        });
+    }
+    break;
+  }
+  default: {
+    interaction.deleteReply();
+  }
   }
 });
 //#endregion

@@ -10,11 +10,11 @@ module.exports = {
     .setDescription("Your first slash command"),
   /**
    * @param {Client} client
-   *  @param {CommandInteraction} interaction
+   * @param {CommandInteraction} interaction
    * @param {CommandInteractionOptionResolver} options
    */
   async run(client, interaction, options) {
     await interaction.deferReply();
-    return await interaction.editReply("It works!");
+    return interaction.editReply("It works!");
   }
 };
