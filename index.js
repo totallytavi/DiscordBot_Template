@@ -52,6 +52,7 @@ client.on("ready", async () => {
     }
   }
   await client.application.commands.set(slashCommands)
+    .then(() => ready = true)
     .catch(e => console.error("[APP-CMD] Failed to set slash commands\n", e));
 
   try {
