@@ -25,7 +25,7 @@ module.exports = {
    * @example toConsole(`Hello, World!`, `functions.js 12:15`, client);
    * @example toConsole(`Published a ban`, `ban.js 14:35`, client);
    */
-  toConsole: async (message, source, client) => {
+  toConsole: async (message, source, client, err) => {
     if(!message || !source || !client) return console.error(`One or more of the required parameters are missing.\n\n> message: ${message}\n> source: ${source}\n> client: ${client}`);
     const channel = await client.channels.cache.get(config.discord.logChannel);
     if(!channel) return console.warn("[WARN] toConsole called but bot cannot find config.discord.logChannel", message, source);
@@ -41,7 +41,7 @@ module.exports = {
         },
         timestamp: new Date()
       })
-    ]});
+    ], files: err ? [{ name: "error.json", attachment: Buffer.from(JSON.stringify({ stack: err.stack, stringified: String(err) })) }] : [] });
 
     return null;
   },
