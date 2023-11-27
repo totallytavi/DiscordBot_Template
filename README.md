@@ -3,15 +3,15 @@ This project has been designed as a template. It is not meant to be used as a st
 
 # Table of Contents
 1. [Modules](#modules)
-   1.1 [Functions](#functions)
-   1.2 [Events](#events)
-   1.3 [Commands](#commands)
+   1. [Functions](#functions)
+   2. [Events](#events)
+   3. [Commands](#commands)
 2. [Installation](#installation)
 3. [Contributing](#contributing)
-   3.1 [Features](#features)
-   3.2 [Security](#security)
+   1. [Features](#features)
+   2. [Security](#security)
 4. [Credits](#credits)
-   4.1 [Contributors](#contributors)+
+   1. [Contributors](#contributors)
 
 # Modules
 This project is designed to be modular. This means that you can add and remove modules as you see fit. The following modules are included by default:
