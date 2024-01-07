@@ -1,56 +1,46 @@
-import { Client, Collection, IntentsBitField, InteractionType } from 'discord.js';
-import { default as disc } from './configs/discord.json' assert { 'type': 'json' };
+//#region Packages
+import { Client, Collection, IntentsBitField } from 'discord.js';
 import { CustomClient } from './typings/Extensions.js';
+// Log developer mode
+if (process.env.NODE_ENV === 'development') console.debug('Starting in development mode');
+//#endregion
 
-//#region Setup
-const client: CustomClient = new Client({
+//#region Discord init
+const client: CustomClient<false> = new Client({
   intents: [
     IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.GuildMembers,
-    IntentsBitField.Flags.MessageContent
+    IntentsBitField.Flags.GuildModeration,
+    IntentsBitField.Flags.GuildEmojisAndStickers,
+    IntentsBitField.Flags.GuildMessages,
+    IntentsBitField.Flags.DirectMessages
   ]
 });
-client.commands = new Collection();
-client.ready = false;
 client.logs = console;
-// Load functions
-client.logs.debug('M | ✦ Loading functions');
-const autoload = await import('./functions/load.js');
-await autoload.load(client);
-// Initialization functions
-for (const f of Object.values(client.functions.init)) {
-  f(client);
-}
+// Load all functions
+const funcs = await import('./functions/load.js').then((f) => f.execute(client)).catch((e) => client.logs.error(e));
+if (!funcs) process.exit(1);
+client.functions = funcs;
+// Run all startup functions
+Array.from(client.functions.keys())
+  .filter((f) => f.startsWith('startup_'))
+  .forEach((f) => client.functions.get(f).execute(client));
 //#endregion
-
-//#region Events
-client.logs.debug('M | ✦ Attaching events');
-//? client.eventNames() for a full list
-client.once('ready', async () => {
-  // Ready handlers
-  for (const func of Object.values(client.functions.ready)) {
-    func(client);
-  }
+//#region Variables
+client.commands = new Collection();
+//#endregion
+//#region Discord events
+client.on('ready', () => {
+  client.logs.info(`Logged in as ${client.user.tag}!`);
+  // Run all ready functions
+  Array.from(client.functions.keys())
+    .filter((f) => f.startsWith('events_ready'))
+    .forEach((f) => client.functions.get(f).execute(client));
 });
-// Interaction handlers
+
 client.on('interactionCreate', async (interaction) => {
-  switch (interaction.type) {
-    case InteractionType.ApplicationCommand: {
-      // Get the command
-      const command = client.commands.get(interaction.commandName);
-      // If the command doesn't exist, return
-      if (!command) return;
-      // Defer in the event of high load
-      await interaction.deferReply({ ephemeral: command.ephemeral ?? false });
-      // Run the command
-      command.run(client, interaction, interaction.options);
-      break;
-    }
-  }
+  client.functions.get('events_interactionCreate_main').execute(client, interaction);
 });
-//#endregion
 
-// Log into Discord
-client.logs.debug('M | ✦ Logging into Discord');
-client.login(disc.bot.token);
+client.login(process.env.DCtoken);
+//#endregion

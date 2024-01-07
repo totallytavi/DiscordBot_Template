@@ -1,32 +1,32 @@
-import { Client, CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Client, SlashCommandBuilder } from 'discord.js';
 import { Logger } from 'pino';
 import { Sequelize } from 'sequelize';
 import { initModels } from '../models/init-models.js';
 
-export interface CustomClient extends Client {
-  // Commands for the bot to handle
+export interface CustomClient<Ready extends boolean = boolean> extends Client {
+  /** @desc Commands for the bot to handle */
   commands?: Map<string, CommandFile>;
-  // Functions dynamically imported
-  functions?: { [key: string]: { [key: string]: FunctionFile['execute'] } };
-  // Sequelize instance
+  /** @desc Functions dynamically imported */
+  functions?: Map<string, FunctionFile>;
+  /** @desc Sequelize instance */
   sequelize?: Sequelize;
-  // Sequelize models for the database
+  /** @desc Sequelize models for the database */
   models?: ReturnType<typeof initModels>;
-  // Whether the bot is ready to accept commands
+  /** @desc Whether the bot is ready to accept commands */
   ready?: boolean;
-  // Logging
-  logs?: Logger | Console;
+  /** @desc Logging ({@link Ready} determines type: true is {@link Logger}, false is {@link Console}) */
+  logs?: Ready extends true ? Logger : Console;
 }
 // Various types of file that will be imported
 export interface CommandFile {
-  name: string;
-  ephemeral: boolean;
-  data: SlashCommandBuilder;
-  run: (client: CustomClient, interaction: CommandInteraction, options: CommandInteraction['options']) => Promise<void>;
+  name?: string;
+  ephemeral?: boolean;
+  data?: SlashCommandBuilder;
+  execute: ({ client, interaction, options }: CmdFileArgs) => Promise<void>;
 }
 export interface FunctionFile {
   name: string;
-  execute: (client: CustomClient) => Promise<void>;
+  execute: (client: CustomClient, ...args: unknown[]) => Promise<unknown>;
 }
 // Instatuts Metric Typings
 export interface RawMetric {
@@ -57,3 +57,9 @@ export interface MetricDataPointPost {
 export const EventTypeArray = ['ready', 'init', 'events'] as const;
 // Export EventTypes as any member of the array
 export type EventTypes = 'ready' | 'init' | 'events';
+
+export type CmdFileArgs = {
+  client: CustomClient<true>;
+  interaction: ChatInputCommandInteraction;
+  options: ChatInputCommandInteraction['options'];
+};
