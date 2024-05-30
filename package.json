@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "discord.js": "14.11",
-    "mysql2": "3.9.7",
+    "mysql2": "3.9.8",
     "pino": "^9.0.0",
     "sequelize": "6.37.3",
     "typescript": "5.4.5"
