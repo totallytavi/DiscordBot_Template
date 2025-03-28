@@ -3,7 +3,7 @@
     "discord.js": "14.16",
     "mysql2": "3.11.4",
     "pino": "9.5.0",
-    "sequelize": "6.37.5",
+    "sequelize": "6.37.7",
     "typescript": "5.6.3"
   },
   "devDependencies": {
