@@ -9,11 +9,6 @@ export async function execute(client: CustomClient, ready: boolean): Promise<voi
     toConsole(`Uncaught exception: ${err}\n` + `Exception origin: ${origin}`, new Error().stack, client);
   });
   process.on('unhandledRejection', async (reason, promise) => {
-    if (!ready) {
-      console.warn('Exiting due to a [unhandledRejection] during start up');
-      console.error(reason, promise);
-      return process.exit(15);
-    }
     // Anti-spam System
     if (recentErrors.length > 2) {
       recentErrors.push({ promise, reason: String(reason), time: new Date() });
@@ -49,10 +44,6 @@ export async function execute(client: CustomClient, ready: boolean): Promise<voi
     toConsole('An [unhandledRejection] has occurred.\n\n> ' + reason, new Error().stack!, client);
   });
   process.on('warning', async (warning) => {
-    if (!ready) {
-      console.warn('[warning] has occurred during start up');
-      console.warn(warning);
-    }
     toConsole(`A [warning] has occurred.\n\n> ${warning}`, new Error().stack!, client);
   });
   process.on('exit', (code) => {

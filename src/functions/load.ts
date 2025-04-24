@@ -4,11 +4,6 @@ import { CustomClient, FunctionFile } from '../typings/Extensions.js';
 export const name = 'load';
 // This loads all functions
 export async function execute(client: CustomClient<false>): Promise<Map<string, FunctionFile>> {
-  // Check for functions folder
-  if (!existsSync('./functions')) {
-    console.warn('F | ! No functions were found! Make sure you are running index.js from the dist directory');
-    return new Map() as Map<never, never>;
-  }
   client.logs.debug('F | ✦ Loading all functions');
   // Read the directory
   const functionFiles: string[] = readdirSync(`./functions`, { recursive: true })

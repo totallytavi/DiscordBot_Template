@@ -6,6 +6,11 @@
       "default": "localhost",
       "type": "string"
     },
+    "user": {
+      "description": "Database user",
+      "default": "root",
+      "type": "string"
+    },
     "password": {
       "description": "Database password",
       "default": "",

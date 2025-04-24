@@ -9,7 +9,7 @@ export async function execute(client: CustomClient<true>, interaction: ChatInput
   // Get command
   const cmd = client.commands.get(name);
   if (!cmd) return;
-  await interaction.deferReply({ ephemeral: cmd.ephemeral || false });
+  await interaction.deferReply({ flags: cmd.ephemeral ? ['Ephemeral'] : [] });
   // Run command
   try {
     cmd.execute({ client, interaction, options: interaction.options });

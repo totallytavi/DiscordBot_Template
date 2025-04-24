@@ -6,9 +6,10 @@ export async function execute(client: CustomClient<true>, interaction: Interacti
   // Avoid running commands before the bot is ready
   if (!client.ready && interaction.isCommand()) {
     interaction.reply({
-      content: 'The bot is still starting up. Please wait a few seconds and try again.',
-      ephemeral: true
+      content: 'The bot is still starting up. Please wait a few seconds and try again',
+      flags: ['Ephemeral']
     });
+    return;
   } else if (!client.ready) {
     return;
   }
@@ -26,6 +27,10 @@ export async function execute(client: CustomClient<true>, interaction: Interacti
     case InteractionType.ApplicationCommandAutocomplete: {
       func = 'autocomplete';
       break;
+    }
+    default: {
+      console.warn('Unhandled interaction type');
+      return;
     }
   }
   // Run all interaction functions

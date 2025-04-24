@@ -9,7 +9,7 @@ import {
   InteractionEditReplyOptions,
   InteractionType
 } from 'discord.js';
-import { default as disc } from './configs/discord.json' assert { type: 'json' };
+import { default as disc } from './configs/discord.json' with { type: 'json' };
 import { CustomClient } from './typings/Extensions.js';
 
 //#region Enums

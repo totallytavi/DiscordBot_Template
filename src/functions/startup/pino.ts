@@ -1,11 +1,14 @@
+import { createWriteStream, existsSync } from 'node:fs';
+import { pino, stdSerializers } from 'pino';
 import { CustomClient } from '../../typings/Extensions.js';
-import { existsSync, mkdirSync, createWriteStream } from 'node:fs';
-import { stdSerializers, pino } from 'pino';
 
 export const name = 'pino';
 export async function execute(client: CustomClient, _ready: boolean): Promise<void> {
   // Create logs directory if it doesn't exist
-  if (!existsSync('./logs')) mkdirSync('./logs');
+  if (!existsSync('../logs')) {
+    console.error('F | ✘ Logs directory does not exist. If you want to use pino, please create it under the root directory');
+    return;
+  }
   // Overwrite console logger with pino
   client.logs = pino(
     {

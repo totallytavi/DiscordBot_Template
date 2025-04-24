@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import { default as db } from '../../configs/db.json' assert { type: 'json' };
+import { default as db } from '../../configs/db.json' with { type: 'json' };
 import { CustomClient } from '../../typings/Extensions.js';
 
 export const name = 'database';
@@ -17,7 +17,6 @@ export async function execute(client: CustomClient, _ready: boolean): Promise<vo
     await sequelize.authenticate();
     if (loader.initModels) loader.initModels(sequelize);
     await sequelize.sync();
-    console.info(`F | ✓ Database connection established`);
   } catch (err) {
     client.logs.warn({ err }, `F | ✘ Failed to create database connection`);
   }

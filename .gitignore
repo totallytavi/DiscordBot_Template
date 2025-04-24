@@ -1,10 +1,13 @@
-# NPM
+# Directories
 /node_modules
-# TypeScript
 /dist
-# Configuration files
+
+# Files
+tsconfig.tsbuildinfo
 **/configs/*.json
-!**/configs/*-prod.json
-# Custom Ignores
+!**/configs/*-schema.json
+!**/configs/*-example.json
+
+# Extensions
 *.log
 *.sh

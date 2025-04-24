@@ -88,6 +88,9 @@ export async function run(
 The `ephemeral` property is optional and defaults to `false`. If set to `true`, the command will only be visible to the user who ran it.
 
 # Installation
+> [!IMPORTANT]
+> This project is tested with Node 20.19.0. Later and earlier versions may work, but are not guaranteed to. If you encounter any issues and know how to solve them, please open a pull request.
+
 To use this project, you must perform the following steps in order.
 1. Clone from GitHub
 ```bash
@@ -97,15 +100,8 @@ git clone https://github.com/totallytavi/BotTemplate.git
 ```bash
 npm install
 ```
-3. Duplicate all `prod.json` files in `config`, but remove the `-prod`
+3. Duplicate all `...-example.json` files in `config`, but remove the `-example`
 4. Fill in all values. You may need to specify the schema to receive proper IntelliSense.
-> [!NOTE]
-> Failure to provide proper credentials may result in a non-functional bot. Make sure to replace `FILENAME` with the proper file name.
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/totallytavi/BotTemplate/main/src/configs/FILENAME-prod.json"
-}
-```
 5. Compile the files
 ```bash
 npm run build
