@@ -22,7 +22,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    # Run an audit check, and fail if any dependencies aren't met.
-    - run: npm audit --audit-level=moderate
+        cache: 'pnpm'
+    # pnpm ci doesn't exist, pnpm install works close enough
+    - run: pnpm install
+    # Run an audit check, and fail if any moderate+ vulnerabilities arise
+    - run: pnpm audit --audit-level=moderate
