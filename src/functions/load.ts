@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { CustomClient, FunctionFile } from '../typings/Extensions.js';
 
 export const name = 'load';

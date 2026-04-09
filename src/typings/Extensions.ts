@@ -5,17 +5,17 @@ import { initModels } from '../models/init-models.js';
 
 export interface CustomClient<Ready extends boolean = boolean> extends Client {
   /** @desc Commands for the bot to handle */
-  commands?: Map<string, CommandFile>;
+  commands: Map<string, CommandFile>;
   /** @desc Functions dynamically imported */
-  functions?: Map<string, FunctionFile>;
+  functions: Map<string, FunctionFile>;
   /** @desc Sequelize instance */
-  sequelize?: Sequelize;
+  sequelize: Sequelize;
   /** @desc Sequelize models for the database */
-  models?: ReturnType<typeof initModels>;
+  models: ReturnType<typeof initModels>;
   /** @desc Whether the bot is ready to accept commands */
-  ready?: boolean;
+  ready: boolean;
   /** @desc Logging ({@link Ready} determines type: true is {@link Logger}, false is {@link Console}) */
-  logs?: Ready extends true ? Logger : Console;
+  logs: Ready extends true ? Logger : Console;
 }
 // Various types of file that will be imported
 export interface CommandFile {

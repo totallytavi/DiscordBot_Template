@@ -3,7 +3,7 @@ import { default as db } from '../../configs/db.json' with { type: 'json' };
 import { CustomClient } from '../../typings/Extensions.js';
 
 export const name = 'database';
-export async function execute(client: CustomClient, _ready: boolean): Promise<void> {
+export async function execute(client: CustomClient<false>, _ready: boolean): Promise<void> {
   // Login to Sequelize
   const sequelize = new Sequelize(db.database, db.user, db.password, {
     host: db.host,

@@ -11,6 +11,6 @@ export const data = new SlashCommandBuilder()
 export async function execute({ client, interaction, options }: CmdFileArgs): Promise<void> {
   const text = options.getString('text') ?? 'It works!';
   await interaction.editReply({
-    content: `${client.user.username} says: '${text}'`
+    content: `${client.user!.username} says: '${text}'`
   });
 }

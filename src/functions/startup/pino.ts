@@ -3,7 +3,7 @@ import { pino, stdSerializers } from 'pino';
 import { CustomClient } from '../../typings/Extensions.js';
 
 export const name = 'pino';
-export async function execute(client: CustomClient, _ready: boolean): Promise<void> {
+export async function execute(client: CustomClient<true>, _ready: boolean): Promise<void> {
   // Create logs directory if it doesn't exist
   if (!existsSync('../logs')) {
     console.error('F | ✘ Logs directory does not exist. If you want to use pino, please create it under the root directory');

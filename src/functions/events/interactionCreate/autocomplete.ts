@@ -3,6 +3,15 @@ import { CustomClient } from '../../../typings/Extensions.js';
 
 export const name = 'autocomplete';
 export async function execute(client: CustomClient, interaction: AutocompleteInteraction) {
+  async function invalidGuildReply() {
+    return interaction.respond([
+      {
+        name: 'Select a valid server first',
+        value: 'NOT_A_VALID_SERVER'
+      }
+    ])
+  }
+
   const focus = interaction.options.getFocused(true);
   const lowerVal = focus.value.toLowerCase();
   const returnValue: ApplicationCommandOptionChoiceData[] = [];
@@ -14,17 +23,27 @@ export async function execute(client: CustomClient, interaction: AutocompleteInt
       break;
     }
     case 'role': {
-      const g = interaction.options.getString('server');
-      client.guilds.cache
-        .get(g)
+      const g = interaction.options.getString('server', true);
+      if (!g)
+        return invalidGuildReply();
+      const guild = client.guilds.cache.get(g)
+      if (!guild)
+        return invalidGuildReply();
+      
+      guild
         .roles.cache.filter((r) => r.name.toLowerCase().includes(lowerVal))
         .forEach((r) => returnValue.push({ name: r.name, value: r.id }));
       break;
     }
     case 'channel': {
       const g = interaction.options.getString('server');
-      client.guilds.cache
-        .get(g)
+      if (!g)
+        return invalidGuildReply();
+      const guild = client.guilds.cache.get(g)
+      if (!guild)
+        return invalidGuildReply();
+
+      guild
         .channels.cache.filter((c) => c.name.toLowerCase().includes(lowerVal))
         .forEach((c) => returnValue.push({ name: c.name, value: c.id }));
       break;

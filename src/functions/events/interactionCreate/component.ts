@@ -1,3 +1,4 @@
+// TODO: Revisit this entire thing, the messageEqual could be problematic
 import { Message, MessageComponentInteraction } from 'discord.js';
 import { CustomClient } from '../../../typings/Extensions.js';
 

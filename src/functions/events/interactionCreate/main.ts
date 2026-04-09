@@ -34,6 +34,6 @@ export async function execute(client: CustomClient<true>, interaction: Interacti
     }
   }
   // Run all interaction functions
-  client.functions.get(`events_interactionCreate_${func}`).execute(client, interaction);
+  client.functions.get(`events_interactionCreate_${func}`)!.execute(client, interaction);
   return;
 }

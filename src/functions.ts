@@ -7,7 +7,8 @@ import {
   EmbedBuilder,
   Interaction,
   InteractionEditReplyOptions,
-  InteractionType
+  InteractionType,
+  TextChannel
 } from 'discord.js';
 import { default as disc } from './configs/discord.json' with { type: 'json' };
 import { CustomClient } from './typings/Extensions.js';
@@ -41,16 +42,16 @@ enum ResultType {
  * @example toConsole(`Hello, World!`, new Error().stack, client);
  */
 export async function toConsole(message: string, source: string, client: CustomClient): Promise<void> {
-  const channel = await client.channels.fetch(disc.channels.logs).catch(() => null);
+  const channel = await client.channels.fetch(disc.channels.logs).catch(() => null) as TextChannel;
   if (source.split('\n').length < 2)
     return console.error('[ERR] toConsole called but Error.stack was not used\n> Source: ' + source);
   source = /(?:[A-Za-z0-9._]+:[0-9]+:[0-9]+)/.exec(source)![0];
-  if (!channel || !channel.isTextBased())
-    return console.warn('[WARN] toConsole called but bot cannot find logging channel\n', message, '\n', source);
+  if (!channel || !channel.isTextBased() || channel.partial)
+    return console.warn('[WARN] toConsole called but bot cannot find valid logging channel\n', message, '\n', source);
 
-  await channel.send(`Incoming message from \`${source}\` at <t:${Math.floor(Date.now() / 1000)}:F>`);
   const check = await channel
     .send({
+      content: `Incoming message from \`${source}\` at <t:${Math.floor(Date.now() / 1000)}:F>`,
       embeds: [
         new EmbedBuilder({
           title: 'Message to Console',
@@ -127,7 +128,7 @@ export function parseTime(time: string): number {
   return duration;
 }
 
-export function getEnumKey(enumObj: object, value: number): string | undefined {
+export function getEnumKey(enumObj: {[key: string|number]: string|number}, value: number): string | undefined {
   for (const key in enumObj) {
     if (Object.prototype.hasOwnProperty.call(enumObj, key) && enumObj[key] === (value as number)) {
       return key;
@@ -163,7 +164,7 @@ export async function paginationRow(
   if (rows.length === 0 || (embeds && embeds.length !== rows.length)) return Promise.reject('No rows were provided');
   let index = 0,
     returnedInteraction;
-  if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
+  if (embeds && embeds.length > 0) args.embeds = [rows[index][1]!];
   while (typeof returnedInteraction === 'undefined') {
     // Create message
     const coll = await interaction
@@ -208,7 +209,7 @@ export async function paginationRow(
       else index--;
     }
     // Configure message
-    if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
+    if (embeds && embeds.length > 0) args.embeds = [rows[index][1]!];
     else args.embeds = [];
     args.components = [rows[index][0], paginationRow];
     // And the loop continues...

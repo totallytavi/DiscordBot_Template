@@ -8,7 +8,7 @@ if (process.env.NODE_ENV === 'development') console.debug('Starting in developme
 //#endregion
 
 //#region Discord init
-const client: CustomClient<false> = new Client({
+const client = new Client({
   intents: [
     IntentsBitField.Flags.Guilds,
     IntentsBitField.Flags.GuildMembers,
@@ -17,7 +17,7 @@ const client: CustomClient<false> = new Client({
     IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.DirectMessages
   ]
-});
+}) as CustomClient<false>;
 client.logs = console;
 // Load all functions
 if (!existsSync('./functions')) {
@@ -29,7 +29,7 @@ client.functions = funcs;
 // Run all startup functions
 Array.from(client.functions.keys())
   .filter((f) => f.startsWith('startup_'))
-  .forEach((f) => client.functions.get(f).execute(client));
+  .forEach((f) => client.functions.get(f)!.execute(client));
 //#endregion
 //#region Variables
 client.commands = new Collection();
@@ -37,15 +37,15 @@ client.commands = new Collection();
 //#region Discord events
 client.on('ready', () => {
   client.ready = true;
-  client.logs.info(`Logged in as ${client.user.tag}!`);
+  client.logs.info(`Logged in as ${client.user!.tag}!`);
   // Run all ready functions
   Array.from(client.functions.keys())
     .filter((f) => f.startsWith('events_ready'))
-    .forEach((f) => client.functions.get(f).execute(client));
+    .forEach((f) => client.functions.get(f)!.execute(client));
 });
 
 client.on('interactionCreate', async (interaction) => {
-  client.functions.get('events_interactionCreate_main').execute(client, interaction);
+  client.functions.get('events_interactionCreate_main')!.execute(client, interaction);
 });
 
 client.login(discord.bot.token);
