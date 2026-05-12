@@ -4,7 +4,7 @@
     "mysql2": "3.20.0",
     "pino": "10.3.1",
     "sequelize": "6.37.8",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
