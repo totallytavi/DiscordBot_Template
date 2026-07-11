@@ -1,22 +1,23 @@
 {
   "dependencies": {
     "discord.js": "14.26",
-    "mysql2": "3.20.0",
+    "mysql2": "3.22.6",
     "pino": "10.3.1",
     "sequelize": "6.37.8",
     "typescript": "6.0.2"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@typescript-eslint/eslint-plugin": "8.58.1",
-    "@typescript-eslint/parser": "8.58.1",
-    "eslint": "10.2.0",
+    "@typescript-eslint/eslint-plugin": "8.63.0",
+    "@typescript-eslint/parser": "8.63.0",
+    "eslint": "10.6.0",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-prettier": "5.5.5",
-    "globals": "17.4.0",
-    "jiti": "2.6.1",
-    "prettier": "3.8.1",
-    "typescript-eslint": "8.58.1"
+    "eslint-plugin-prettier": "5.5.6",
+    "globals": "17.7.0",
+    "jiti": "2.7.0",
+    "prettier": "3.9.5",
+    "typescript-eslint": "8.63.0"
   },
-  "type": "module"
+  "type": "module",
+  "packageManager": "pnpm@11.11.0+sha512.4463f65fd80ed80d69bc1d4bf163ee94f605c7380fc318bb5b2ebe15f8cd12d49c51a4d59e951b401e764d3b6ca751cbf51bc50ed7001a6bcb4935e684c34882"
 }
